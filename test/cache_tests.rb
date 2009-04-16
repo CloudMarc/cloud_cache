@@ -87,11 +87,15 @@ class CacheTests < Test::Unit::TestCase
   end
 
   def test_list_keys
+    @cache.put("k1","v2") 
+    sleep 1
     keys = @cache.list_keys
     puts("PRINTING KEYS:")
     for key in keys
       puts key
     end
+    haskey = keys.index("k1")
+    assert_not_nil(haskey)
   end
 
   def test_counters
@@ -117,7 +121,14 @@ class CacheTests < Test::Unit::TestCase
 
   def test_flush
     x = @cache.flush
+    assert_equal('[]', x)
   end
+
+  def test_stats
+    x = @cache.stats
+    puts x
+  end
+
 
 
 end

@@ -126,9 +126,20 @@ module ActiveSupport
         keys
       end
 
+      def stats
+        body = run_http(:get, "mystats", "mystats")
+        #keys = ActiveSupport::JSON.decode body # body[1..-2].split(',').collect! {|n| n.to_i}
+        body  
+      end
+
+
       def flush
         body = run_http(:get, "flush", "flush")
-        body
+        body.strip
+      end
+
+      def clear
+        flush
       end
 
       def read(name, options = nil)
@@ -152,17 +163,38 @@ module ActiveSupport
 
       def delete_matched(matcher, options = nil)
         super
-        raise "delete_matched not supported by BigCache"
+        raise "delete_matched not yet supported by CloudCache"
       end
 
-      def increment(key)
-        ret = run_http(:post, "POST", key + "/incr", nil, {"val"=>1})
+      def exist?(key, options = nil)
+        x = get(key)
+        r = true
+        if (x == nil)
+          r = false
+        end
+        r
+      end
+
+      def fetch(key , options = {})
+        if (options != {})
+          raise "Options on fetch() not yet supported by this library"
+        end
+        v = get(key)
+        v
+      end
+
+      def increment(key,val=1)
+        ret = run_http(:post, "POST", key + "/incr", nil, {"val"=>val})
         ret.to_i
       end
 
-      def decrement(key)
-        ret = run_http(:post, "POST", key + "/decr", nil, {"val"=>1})
+      def decrement(key,val=1)
+        ret = run_http(:post, "POST", key + "/decr", nil, {"val"=>val})
         ret.to_i
+      end
+
+      def silence!
+        super
       end
 
       def shutdown
