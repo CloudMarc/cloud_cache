@@ -32,7 +32,7 @@ module ActiveSupport
 
         if !extra_headers.nil?
           extra_headers.each_pair do |k, v|
-#            headers[k] = v
+            #            headers[k] = v
           end
         end
 
@@ -43,6 +43,11 @@ module ActiveSupport
           req.body = body unless body.nil?
         elsif (http_method == :post)
           req = Net::HTTP::Post.new(uri.path)
+          if !parameters.nil?
+            req.set_form_data(parameters)
+          end
+        elsif (http_method == :delete)
+          req = Net::HTTP::Delete.new(uri.path)
           if !parameters.nil?
             req.set_form_data(parameters)
           end
@@ -69,16 +74,9 @@ module ActiveSupport
       end
 
       def auth()
-
-        temp = @secret_key
-        @secret_key = secret
-
         command_name =  "auth"
         command_path = "auth"
-
         run_http(:get, command_name, command_path)
-        @secret_key = temp
-
       end
 
       def put(key, val, seconds_to_store=0)
