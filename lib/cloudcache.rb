@@ -32,7 +32,7 @@ module ActiveSupport
 
         if !extra_headers.nil?
           extra_headers.each_pair do |k, v|
-            #            headers[k] = v
+            headers[k] = v
           end
         end
 
@@ -80,11 +80,12 @@ module ActiveSupport
       end
 
       def put(key, val, seconds_to_store=0)
-        seconds_to_store = seconds_to_store > 0 ? seconds_to_store : 9999999
+#        seconds_to_store = seconds_to_store > 0 ? seconds_to_store : 9999999
         puts 'seconds=' + seconds_to_store.to_s
         data = Marshal.dump(val)
         val_to_put = data #(Time.now+seconds_to_store).to_i.to_s + "::" + data
-        run_http(:put, "PUT", key, val_to_put, nil, {"ttl"=>seconds_to_store})
+        extra_headers = seconds_to_store > 0 ? {"ttl"=>seconds_to_store} : nil
+        run_http(:put, "PUT", key, val_to_put, nil, extra_headers)
       end
 
 

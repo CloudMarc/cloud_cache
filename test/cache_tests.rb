@@ -52,34 +52,43 @@ class CacheTests < Test::Unit::TestCase
 
     sleep(5)
 
-    response = @cache.get("s1");
+    response = @cache.get("s1")
     assert_equal(to_put, response)
 
   end
 
   def test_not_exists
-    assert_nil @cache.get("does_not_exist");
+    assert_nil @cache.get("does_not_exist")
   end
 
   def test_delete
     to_put = "I am a testing string. Take me apart and put me back together again."
-    @cache.put("s1", to_put, 0);
+    @cache.put("s1", to_put, 0)
 
     sleep(5)
 
-    response = @cache.get("s1");
+    response = @cache.get("s1")
     assert_equal(to_put, response)
 
     @cache.delete("s1");
 
-    response = @cache.get("s1");
+    response = @cache.get("s1")
     assert_nil(response)
+  end
 
+  def test_expiry
+    to_put = "I am a testing string. Take me apart and put me back together again."
+    @cache.put("s1", to_put, 5);
+
+    sleep(10)
+
+    response = @cache.get("s1")
+    assert_nil(response)
   end
 
   def test_list_keys
     keys = @cache.list_keys
-    puts("PRINTING KEYS:");
+    puts("PRINTING KEYS:")
     for key in keys
       puts key
     end
