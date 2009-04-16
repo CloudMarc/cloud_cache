@@ -126,6 +126,11 @@ module ActiveSupport
         keys
       end
 
+      def flush
+        body = run_http(:get, "flush", "flush")
+        body
+      end
+
       def read(name, options = nil)
         #        puts 'read from localcache'
         super
