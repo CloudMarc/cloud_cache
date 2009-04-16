@@ -115,5 +115,9 @@ class CacheTests < Test::Unit::TestCase
 
   end
 
+  def test_flush
+    x = @cache.flush
+  end
+
 
 end
