@@ -89,6 +89,16 @@ module ActiveSupport
       end
 
 
+      def get_multi(keys)
+        kj = keys.to_json
+        puts "keys.to_json = " + kj
+        extra_headers = {"keys" => kj }
+        puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
+        puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
+        body = run_http(:get, "GET", "getmulti" , nil,nil,extra_headers)
+        vals = ActiveSupport::JSON.decode body 
+        vals 
+      end
       def get(key)
 
         begin

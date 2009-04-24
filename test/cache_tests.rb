@@ -128,6 +128,17 @@ class CacheTests < Test::Unit::TestCase
     x = @cache.stats
     puts x
   end
+  def test_get_multi
+    @cache.put("m1","v1")
+    @cache.put("m2","v2")
+
+    kz = Array["m1" , "m2", "m3"]
+    vz = @cache.get_multi(kz) 
+
+    assert_equal("v1",vz["m1"]);
+    assert_equal("v2",vz["m2"]);
+    assert_nil(vz["m3"]);
+  end
 
 
 
