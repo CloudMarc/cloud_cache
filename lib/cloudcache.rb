@@ -1,14 +1,18 @@
 require 'rubygems'
 require 'active_support'
 require 'net/http'
-require 'hmac-sha1'
 require 'base64'
-require 'json'
+
+$:.unshift(File.dirname(__FILE__))
+require 'hmac-sha1'
+
 
 module ActiveSupport
   module Cache
 
     class CloudCache < Store
+	
+	VERSION = '1.0.1'
 
       attr_accessor :secret_key
 
@@ -21,11 +25,11 @@ module ActiveSupport
 
       def run_http(http_method, command_name, command_path, body=nil, parameters=nil, extra_headers=nil)
         ts = generate_timestamp(Time.now.gmtime)
-        puts 'timestamp = ' + ts
+        # puts 'timestamp = ' + ts
         sig = generate_signature("CloudCache", command_name, ts, @secret_key)
-        puts "My signature = " + sig
+        # puts "My signature = " + sig
         url = "http://cloudcache.ws/" + command_path
-        puts url
+        # puts url
 
         user_agent = "CloudCache Ruby Client"
         headers = {'User-Agent' => user_agent, 'signature' => sig, 'timestamp' => ts, 'akey' => @access_key}
@@ -57,15 +61,15 @@ module ActiveSupport
         headers.each_pair do |k, v|
           req[k] = v
         end
-        req.each_header do |k, v|
-          puts 'header ' + k + '=' + v
-        end
+        # req.each_header do |k, v|
+          # puts 'header ' + k + '=' + v
+        #end
         res = Net::HTTP.start(uri.host, uri.port) do |http|
           http.request(req)
         end
         case res
         when Net::HTTPSuccess
-          puts 'response body=' + res.body
+          # puts 'response body=' + res.body
           res.body
         else
           res.error!
@@ -81,7 +85,7 @@ module ActiveSupport
 
       def put(key, val, seconds_to_store=0)
 #        seconds_to_store = seconds_to_store > 0 ? seconds_to_store : 9999999
-        puts 'seconds=' + seconds_to_store.to_s
+        # puts 'seconds=' + seconds_to_store.to_s
         data = Marshal.dump(val)
         val_to_put = data #(Time.now+seconds_to_store).to_i.to_s + "::" + data
         extra_headers = seconds_to_store > 0 ? {"ttl"=>seconds_to_store} : nil
@@ -104,10 +108,11 @@ module ActiveSupport
         begin
           cache_entry = run_http(:get, "GET", key)
         rescue Net::HTTPServerException
-          puts $!.message
+          # puts $!.message
           return nil if $!.message.include? "404"
+		  raise $!
         end
-        puts 'cache_entry=' + cache_entry
+        # puts 'cache_entry=' + cache_entry
 =begin
         index = cache_entry.index('::')
         puts 'index=' + index.to_s

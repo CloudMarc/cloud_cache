@@ -1,0 +1,9 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/cloud_cache
+lib/cloud_cache.rb
+lib/hmac.rb
+lib/hmac-sha1.rb
+test/test_cloud_cache.rb
