@@ -1,4 +1,4 @@
-require 'test/unit'
+require 'mini/test'
 require '../lib/cloudcache'
 
 #
@@ -101,7 +101,7 @@ class CacheTests < Test::Unit::TestCase
   def test_counters
     val = 0;
     key = "counter1";
-    @cache.put(key, val, 50000);
+    @cache.put(key, val, 50000, true);
     10.times do
       val = @cache.increment(key)
     end
@@ -115,7 +115,6 @@ class CacheTests < Test::Unit::TestCase
     # One more to make sure it stays at 0
     val = @cache.decrement(key);
     assert_equal(0, val);
-
 
   end
 
