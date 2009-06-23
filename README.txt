@@ -1,6 +1,6 @@
 = cloud_cache
 
-http://code.google.com/p/cloudcache-ruby/
+http://www.quetzall.com/
 
 == DESCRIPTION:
 

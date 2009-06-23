@@ -21,7 +21,6 @@ module ActiveSupport
 
         class CloudCache < Store
 
-            VERSION = '1.0.4'
 
             attr_accessor :secret_key
 
