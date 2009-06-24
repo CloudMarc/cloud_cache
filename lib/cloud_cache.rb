@@ -111,7 +111,9 @@ module ActiveSupport
                 puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
                 puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
                 body = run_http(:get, "GET", "getmulti", nil, nil, extra_headers)
+               # puts 'body=' + body.to_s
                 vals = ActiveSupport::JSON.decode body
+               # puts 'vals=' + vals.inspect
                 vals
             end
 
@@ -129,6 +131,11 @@ module ActiveSupport
                 else
                     return Marshal.load((data))
                 end
+            end
+
+            # returns the value as an int.
+            def get_i(key, raw=false)
+               return get(key, raw).to_i
             end
 
             def list_keys
