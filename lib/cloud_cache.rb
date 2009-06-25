@@ -50,6 +50,7 @@ module ActiveSupport
 
 
                 uri = URI.parse(url)
+                #puts 'body=' + body.to_s
                 if (http_method == :put)
                     req = Net::HTTP::Put.new(uri.path)
                     req.body = body unless body.nil?
@@ -104,17 +105,37 @@ module ActiveSupport
             end
 
 
-            def get_multi(keys)
+            def get_multi(keys, raw=false)
                 kj = keys.to_json
-                puts "keys.to_json = " + kj
+                #puts "keys.to_json = " + kj
                 extra_headers = {"keys" => kj }
-                puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
-                puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
+                #puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
+                #puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
                 body = run_http(:get, "GET", "getmulti", nil, nil, extra_headers)
-               # puts 'body=' + body.to_s
-                vals = ActiveSupport::JSON.decode body
-               # puts 'vals=' + vals.inspect
-                vals
+                puts 'body=' + body.to_s
+                # todo: should try to stream the body in
+                #vals = ActiveSupport::JSON.decode body
+                # New response format is:
+#                VALUE <key>  <bytes> \r\n
+#<data block>\r\n
+#VALUE <key>  <bytes> \r\n
+#<data block>\r\n
+                # END
+                values = {}
+                curr_key = nil
+                data_length = 0
+                body.each_line do |line|
+                    break if line == "END\r\n"
+                    if line =~ /^VALUE (.+) (.+)/ then # (key) (bytes)
+                        curr_key, data_length = $1, $2
+                        #raise CloudCacheError, "Unexpected response #{line.inspect}"
+                    else
+                        # data block
+                        values[curr_key] = line.strip
+                    end
+                end
+                puts 'values=' + values.inspect
+                values
             end
 
             def get(key, raw=false)
@@ -135,7 +156,7 @@ module ActiveSupport
 
             # returns the value as an int.
             def get_i(key, raw=false)
-               return get(key, raw).to_i
+                return get(key, raw).to_i
             end
 
             def list_keys
@@ -229,6 +250,10 @@ module ActiveSupport
                 end
                 my_b64_hmac_digest = Base64.encode64(my_sha_hmac).strip
                 return my_b64_hmac_digest
+            end
+
+            class CloudCacheError < RuntimeError
+
             end
         end
     end
