@@ -99,7 +99,7 @@ module ActiveSupport
                 else
                     data = (Marshal.dump(val))
                 end
-                puts 'putting=' + data.to_s
+                #puts 'putting=' + data.to_s
                 extra_headers = seconds_to_store > 0 ? {"ttl"=>seconds_to_store} : nil
                 run_http(:put, "PUT", key, data, nil, extra_headers)
             end
@@ -112,14 +112,14 @@ module ActiveSupport
                 #puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
                 #puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
                 body = run_http(:get, "GET", "getmulti", nil, nil, extra_headers)
-                puts 'body=' + body.to_s
+                #puts 'body=' + body.to_s
                 # todo: should try to stream the body in
                 #vals = ActiveSupport::JSON.decode body
                 # New response format is:
-#                VALUE <key>  <bytes> \r\n
-#<data block>\r\n
-#VALUE <key>  <bytes> \r\n
-#<data block>\r\n
+                # VALUE <key>  <bytes> \r\n
+                # <data block>\r\n
+                # VALUE <key>  <bytes> \r\n
+                # <data block>\r\n
                 # END
                 values = {}
                 curr_key = nil
@@ -131,10 +131,10 @@ module ActiveSupport
                         #raise CloudCacheError, "Unexpected response #{line.inspect}"
                     else
                         # data block
-                        values[curr_key] = line.strip
+                        values[curr_key] = raw ? line.strip : Marshal.load(line.strip)
                     end
                 end
-                puts 'values=' + values.inspect
+                #puts 'values=' + values.inspect
                 values
             end
 
@@ -155,8 +155,10 @@ module ActiveSupport
             end
 
             # returns the value as an int.
-            def get_i(key, raw=false)
-                return get(key, raw).to_i
+            def get_i(key)
+                val = get(key, true)
+                return nil if val.nil?
+                return val.to_i
             end
 
             def list_keys
@@ -203,12 +205,8 @@ module ActiveSupport
             end
 
             def exist?(key, options = nil)
-                x = get(key)
-                r = true
-                if (x == nil)
-                    r = false
-                end
-                r
+                x = get(key, true)
+                return !x.nil?
             end
 
             def fetch(key, options = {})

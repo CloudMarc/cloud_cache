@@ -2,15 +2,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cloud_cache}
-  s.version = "1.1.0"
+  s.version = "1.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Travis Reeder", "Marc Byrd"]
-  s.date = %q{2009-06-23}
-  s.default_executable = %q{cloud_cache}
+  s.authors = ["Travis Reeder"]
+  s.date = %q{2009-06-30}
   s.description = %q{Client library for Quetzall's CloudCache service.}
   s.email = %q{travis@appoxy.com}
-  s.executables = ["cloud_cache"]
   s.extra_rdoc_files = [
     "README.txt"
   ]
@@ -27,7 +25,8 @@ Gem::Specification.new do |s|
   s.summary = %q{Client library for Quetzall's CloudCache service.}
   s.test_files = [
     "test/cache_tests.rb",
-     "test/test_cloud_cache.rb"
+     "test/test_cloud_cache.rb",
+     "test/test_runner.rb"
   ]
 
   if s.respond_to? :specification_version then
