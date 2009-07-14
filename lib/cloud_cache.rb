@@ -124,16 +124,28 @@ module ActiveSupport
                 values = {}
                 curr_key = nil
                 data_length = 0
+                val = ""
+                count = 0
                 body.each_line do |line|
-                    break if line == "END\r\n"
+                    # print 'LINE=' + line
+                    if line == "END\r\n"
+                        # puts 'ENDED!!!'
+                        break
+                    end
                     if line =~ /^VALUE (.+) (.+)/ then # (key) (bytes)
+                        if !curr_key.nil?
+                            values[curr_key] = raw ? val.strip : Marshal.load(val.strip)
+                        end
                         curr_key, data_length = $1, $2
+                        val = ""
                         #raise CloudCacheError, "Unexpected response #{line.inspect}"
                     else
                         # data block
-                        values[curr_key] = raw ? line.strip : Marshal.load(line.strip)
+                        val += line
                     end
+                    count += 1
                 end
+                values[curr_key] = raw ? val.strip : Marshal.load(val.strip)
                 #puts 'values=' + values.inspect
                 values
             end
@@ -163,6 +175,7 @@ module ActiveSupport
 
             def list_keys
                 body = run_http(:get, "listkeys", "listkeys")
+                # puts "list_keys=" + body
                 keys = ActiveSupport::JSON.decode body # body[1..-2].split(',').collect! {|n| n.to_i}
                 keys
             end
@@ -205,6 +218,10 @@ module ActiveSupport
             end
 
             def exist?(key, options = nil)
+                exists?(key, options)
+            end
+
+            def exists?(key, options = nil)
                 x = get(key, true)
                 return !x.nil?
             end

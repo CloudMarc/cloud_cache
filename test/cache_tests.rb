@@ -1,6 +1,6 @@
 require 'test/unit'
 require '../lib/cloud_cache'
-
+require 'my_class'
 #
 # You'll need make a cloudcache.yml file in this directory that contains:
 # amazon:
@@ -90,7 +90,7 @@ class CacheTests < Test::Unit::TestCase
     end
 
     def test_list_keys
-        @cache.put("k1", "v2")
+        @cache.put("k1", "v2", 1000)
         sleep 1
         keys = @cache.list_keys
         puts("PRINTING KEYS:")
@@ -150,13 +150,15 @@ class CacheTests < Test::Unit::TestCase
     def test_get_multi
         @cache.put("m1", "v1", 500, false)
         @cache.put("m2", "v2", 500, false)
+        @cache.put("m4", MyClass.new("Travis", 10), 500, false)
 
-        kz = Array["m1", "m2", "m3"]
+        kz = Array["m1", "m2", "m3", "m4"]
         vz = @cache.get_multi(kz)
 
         assert_equal("v1", vz["m1"]);
         assert_equal("v2", vz["m2"]);
         assert_nil(vz["m3"]);
+        assert_equal("Travis", vz["m4"].name, vz["m4"].age)
     end
 
 
