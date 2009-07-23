@@ -9,14 +9,6 @@ require 'my_class'
 #
 class CacheTests < Test::Unit::TestCase
 
-    #def initialize(*params)
-    #    super(*params)
-    #end
-
-    def test_for_truth
-        assert true
-    end
-
     def setup
         puts("Setting up cache...")
         props = nil
@@ -136,6 +128,11 @@ class CacheTests < Test::Unit::TestCase
     end
 
     def test_get_multi_raw
+        @cache.remove("m1") rescue false
+        @cache.remove("m2") rescue false
+        @cache.remove("m3") rescue false
+        @cache.remove("m4") rescue false
+
         @cache.put("m1", "v1", 500, true)
         @cache.put("m2", "v2", 500, true)
 
@@ -145,9 +142,16 @@ class CacheTests < Test::Unit::TestCase
         assert_equal("v1", vz["m1"]);
         assert_equal("v2", vz["m2"]);
         assert_nil(vz["m3"]);
+
+
     end
 
     def test_get_multi
+         @cache.remove("m1") rescue false
+        @cache.remove("m2") rescue false
+        @cache.remove("m3") rescue false
+        @cache.remove("m4") rescue false
+
         @cache.put("m1", "v1", 500, false)
         @cache.put("m2", "v2", 500, false)
         @cache.put("m4", MyClass.new("Travis", 10), 500, false)
@@ -158,9 +162,44 @@ class CacheTests < Test::Unit::TestCase
         assert_equal("v1", vz["m1"]);
         assert_equal("v2", vz["m2"]);
         assert_nil(vz["m3"]);
-        assert_equal("Travis", vz["m4"].name, vz["m4"].age)
+        assert_equal("Travis", vz["m4"].name)
+        assert_equal(10, vz["m4"].age)
+
+        @cache.put("m3", MyClass.new("Leroy", 3), 500, false)
+
+        kz = Array["m1", "m2", "m3", "m4"]
+        vz = @cache.get_multi(kz)
+
+        assert_equal("v1", vz["m1"]);
+        assert_equal("v2", vz["m2"]);
+        assert_equal("Leroy", vz["m3"].name)
+        assert_equal(3, vz["m3"].age)
+        assert_equal("Travis", vz["m4"].name)
+        assert_equal(10, vz["m4"].age)
+
+
     end
 
+    def test_big
+        s = random_string(1500)
+        @cache.put("s1", s)
+
+        s2 = @cache.get("s1")
+
+        assert_equal(s, s2)
+    end
+
+    def random_string(length=10)
+        chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+        password = ''
+        length.times { password << chars[rand(chars.size)] }
+        password
+    end
+
+    def test_usage
+        usage = @cache.usage
+        assert_kind_of(Numeric, usage)
+    end
 
 
 

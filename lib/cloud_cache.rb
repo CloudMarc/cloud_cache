@@ -78,7 +78,7 @@ module ActiveSupport
                 end
                 case res
                     when Net::HTTPSuccess
-                        # puts 'response body=' + res.body
+                         #puts 'response body=' + res.body
                         res.body
                     else
                         res.error!
@@ -93,6 +93,7 @@ module ActiveSupport
             end
 
             def put(key, val, seconds_to_store=0, raw=false)
+                #puts 'putting ' + val.to_s + ' to key=' + key
                 seconds_to_store = 0 if seconds_to_store.nil?
                 if raw
                     data = val.to_s
@@ -181,11 +182,15 @@ module ActiveSupport
             end
 
             def stats
-                body = run_http(:get, "mystats", "mystats")
+                body = run_http(:get, "myusage", "myusage")
                 #keys = ActiveSupport::JSON.decode body # body[1..-2].split(',').collect! {|n| n.to_i}
-                body
+                #puts 'body=' + body
+                body.to_i
             end
 
+            def usage
+                return stats
+            end
 
             def flush
                 body = run_http(:get, "flush", "flush")
@@ -210,6 +215,10 @@ module ActiveSupport
             def delete(name, options = nil)
                 super
                 run_http(:delete, "DELETE", name)
+            end
+
+            def remove(name, options=nil)
+                delete(name, options)
             end
 
             def delete_matched(matcher, options = nil)
