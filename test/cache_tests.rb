@@ -147,7 +147,16 @@ class CacheTests < Test::Unit::TestCase
     end
 
     def test_get_multi
-         @cache.remove("m1") rescue false
+
+        kz = []
+        vz = @cache.get_multi(kz)
+        assert vz.size == 0
+
+        kz = ["nothere"]
+        vz = @cache.get_multi(kz)
+        assert vz.size == 0
+
+        @cache.remove("m1") rescue false
         @cache.remove("m2") rescue false
         @cache.remove("m3") rescue false
         @cache.remove("m4") rescue false
@@ -156,7 +165,7 @@ class CacheTests < Test::Unit::TestCase
         @cache.put("m2", "v2", 500, false)
         @cache.put("m4", MyClass.new("Travis", 10), 500, false)
 
-        kz = Array["m1", "m2", "m3", "m4"]
+        kz = ["m1", "m2", "m3", "m4"]
         vz = @cache.get_multi(kz)
 
         assert_equal("v1", vz["m1"]);
@@ -167,7 +176,7 @@ class CacheTests < Test::Unit::TestCase
 
         @cache.put("m3", MyClass.new("Leroy", 3), 500, false)
 
-        kz = Array["m1", "m2", "m3", "m4"]
+        kz = ["m1", "m2", "m3", "m4"]
         vz = @cache.get_multi(kz)
 
         assert_equal("v1", vz["m1"]);

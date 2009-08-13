@@ -76,9 +76,10 @@ module ActiveSupport
                 res = Net::HTTP.start(uri.host, uri.port) do |http|
                     http.request(req)
                 end
+                #puts 'response body=' + res.body
                 case res
                     when Net::HTTPSuccess
-                         #puts 'response body=' + res.body
+                        #puts 'response body=' + res.body
                         res.body
                     else
                         res.error!
@@ -107,6 +108,7 @@ module ActiveSupport
 
 
             def get_multi(keys, raw=false)
+                return {} if keys.size == 0
                 kj = keys.to_json
                 #puts "keys.to_json = " + kj
                 extra_headers = {"keys" => kj }
@@ -128,7 +130,7 @@ module ActiveSupport
                 val = ""
                 count = 0
                 body.each_line do |line|
-                    # print 'LINE=' + line
+                    #print 'LINE=' + line
                     if line == "END\r\n"
                         # puts 'ENDED!!!'
                         break
@@ -146,7 +148,9 @@ module ActiveSupport
                     end
                     count += 1
                 end
-                values[curr_key] = raw ? val.strip : Marshal.load(val.strip)
+                if !val.nil? && val != ""
+                    values[curr_key] = raw ? val.strip : Marshal.load(val.strip)
+                end
                 #puts 'values=' + values.inspect
                 values
             end
