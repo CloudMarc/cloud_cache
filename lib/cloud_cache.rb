@@ -54,6 +54,7 @@ module ActiveSupport
                 if (http_method == :put)
                     req = Net::HTTP::Put.new(uri.path)
                     req.body = body unless body.nil?
+                    #puts 'BODY SIZE=' + req.body.length.to_s
                 elsif (http_method == :post)
                     req = Net::HTTP::Post.new(uri.path)
                     if !parameters.nil?
@@ -66,6 +67,9 @@ module ActiveSupport
                     end
                 else
                     req = Net::HTTP::Get.new(uri.path)
+                    if !parameters.nil?
+                        req.set_form_data(parameters)
+                    end
                 end
                 headers.each_pair do |k, v|
                     req[k] = v
@@ -93,7 +97,9 @@ module ActiveSupport
                 run_http(:get, command_name, command_path)
             end
 
-            def put(key, val, seconds_to_store=0, raw=false)
+            def put(key, val, options={})
+                seconds_to_store = options[:expires_in] || options[:ttl]
+                raw = options[:raw]
                 #puts 'putting ' + val.to_s + ' to key=' + key
                 seconds_to_store = 0 if seconds_to_store.nil?
                 if raw
@@ -106,9 +112,9 @@ module ActiveSupport
                 run_http(:put, "PUT", key, data, nil, extra_headers)
             end
 
-
-            def get_multi(keys, raw=false)
+            def get_multi(keys, options={})
                 return {} if keys.size == 0
+                raw = options[:raw]
                 kj = keys.to_json
                 #puts "keys.to_json = " + kj
                 extra_headers = {"keys" => kj }
@@ -155,7 +161,8 @@ module ActiveSupport
                 values
             end
 
-            def get(key, raw=false)
+            def get(key, options={})
+                raw = options[:raw]
                 begin
                     data = run_http(:get, "GET", key)
                 rescue Net::HTTPServerException
@@ -173,7 +180,7 @@ module ActiveSupport
 
             # returns the value as an int.
             def get_i(key)
-                val = get(key, true)
+                val = get(key, :raw=>true)
                 return nil if val.nil?
                 return val.to_i
             end
@@ -213,12 +220,23 @@ module ActiveSupport
 
             def write(name, value, options={})
                 super
-                put(name, value, options[:expires_in], options[:raw])
+                put(name, value, options)
             end
 
             def delete(name, options = nil)
                 super
-                run_http(:delete, "DELETE", name)
+                begin
+                    run_http(:delete, "DELETE", name)
+                rescue Net::HTTPServerException => ex
+                    puts 'CAUGHT ' + ex.response.inspect
+                    case ex.response
+                        when Net::HTTPNotFound
+                            return false
+                        else
+                            raise ex
+                    end
+                end
+                true
             end
 
             def remove(name, options=nil)
@@ -235,7 +253,7 @@ module ActiveSupport
             end
 
             def exists?(key, options = nil)
-                x = get(key, true)
+                x = get(key, :raw=>true)
                 return !x.nil?
             end
 
@@ -247,13 +265,21 @@ module ActiveSupport
                 v
             end
 
-            def increment(key, val=1)
-                ret = run_http(:post, "POST", key + "/incr", nil, {"val"=>val})
+            def increment(key, val=1, options={})
+                headers = {"val"=>val}
+                if options[:set_if_not_found]
+                    headers["x-cc-set-if-not-found"] = options[:set_if_not_found]
+                end
+                ret = run_http(:post, "POST", key + "/incr", nil, headers)
                 ret.to_i
             end
 
-            def decrement(key, val=1)
-                ret = run_http(:post, "POST", key + "/decr", nil, {"val"=>val})
+            def decrement(key, val=1, options={})
+                headers = {"val"=>val}
+                if options[:set_if_not_found]
+                    headers["x-cc-set-if-not-found"] = options[:set_if_not_found]
+                end
+                ret = run_http(:post, "POST", key + "/decr", nil, headers)
                 ret.to_i
             end
 
