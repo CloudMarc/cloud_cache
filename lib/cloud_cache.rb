@@ -290,7 +290,11 @@ module ActiveSupport
             end
 
             def shutdown
+                close
+            end
 
+            def close
+                # close http connection if it exists.
             end
 
 
