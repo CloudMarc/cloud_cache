@@ -225,7 +225,7 @@ class CacheTests < Test::Unit::TestCase
         val = 3
         ret = @cache.increment(key, 1, :set_if_not_found=>val)
         assert ret == val
-        ret = @cache.get(key)
+        ret = @cache.get_i(key)
         assert ret == val
         ret = @cache.increment(key, 1, :set_if_not_found=>val)
         assert ret == val + 1
