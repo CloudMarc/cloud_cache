@@ -106,7 +106,7 @@ module ActiveSupport
                     data = val.to_s
                 else
                     data = (Marshal.dump(val))
-                    data = Base64.encode64(data)
+                    #data = Base64.encode64(data)
                 end
                 #puts 'putting=' + data.to_s
                 extra_headers = seconds_to_store > 0 ? {"ttl"=>seconds_to_store} : nil
@@ -144,7 +144,7 @@ module ActiveSupport
                     end
                     if line =~ /^VALUE (.+) (.+)/ then # (key) (bytes)
                         if !curr_key.nil?
-                            values[curr_key] = raw ? val.strip : Marshal.load(Base64.decode64(val.strip))
+                            values[curr_key] = raw ? val.strip : Marshal.load(val.strip)
                         end
                         curr_key, data_length = $1, $2
                         val = ""
@@ -156,7 +156,7 @@ module ActiveSupport
                     count += 1
                 end
                 if !val.nil? && val != ""
-                    values[curr_key] = raw ? val.strip :  Marshal.load(Base64.decode64(val.strip))
+                    values[curr_key] = raw ? val.strip :  Marshal.load((val.strip))
                 end
                 #puts 'values=' + values.inspect
                 values
@@ -175,7 +175,7 @@ module ActiveSupport
                 if raw
                     return data
                 else
-                    data = Base64.decode64(data)
+                    #data = Base64.decode64(data)
                     return Marshal.load((data))
                 end
             end
