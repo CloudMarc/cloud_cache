@@ -20,7 +20,9 @@ Instant memcached, no servers required! See www.quetzall.com for more informatio
 
 == INSTALL:
 
-sudo gem install activesupport
+Be sure you have the new http://gemcutter.org source ABOVE rubyforge.org, then:
+
+    gem install cloud_cache
 
 == LICENSE:
 
