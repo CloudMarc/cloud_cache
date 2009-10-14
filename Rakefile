@@ -14,9 +14,15 @@ begin
         gemspec.description = "Client library for Quetzall's CloudCache service."
         gemspec.authors = ["Travis Reeder"]
         gemspec.files = FileList['lib/**/*.rb']
+        gemspec.add_dependency 'http_connection'
     end
 rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
 
 # vim: syntax=Ruby
+task :test do
+    Dir.chdir 'test'
+#    require 'lib/cloud_cache'
+    require 'cache_tests'
+end

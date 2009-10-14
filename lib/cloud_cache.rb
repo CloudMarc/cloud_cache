@@ -2,6 +2,7 @@ require 'rubygems'
 require 'active_support'
 require 'net/http'
 require 'base64'
+require 'right_http_connection'
 
 $:.unshift(File.dirname(__FILE__))
 
@@ -17,13 +18,29 @@ end
 
 class CloudCache < ActiveSupport::Cache::Store
 
+    DEFAULT_TTL = 0
+    DEFAULT_HOST = "cloudcache.ws"
+    DEFAULT_PORT = "80"
+    DEFAULT_PROTOCOL = "http"
 
-    attr_accessor :secret_key
+    attr_accessor :secret_key, :pipeline
 
-    def initialize(access_key, secret_key)
-        puts 'Creating new CloudCache'
+    def initialize(access_key, secret_key, options={})
         @access_key = access_key
         @secret_key = secret_key
+
+        @server = options[:host] || DEFAULT_HOST
+        @port = options[:port] || DEFAULT_PORT
+        @protocol = options[:protocol] || DEFAULT_PROTOCOL
+
+        @default_ttl = options[:default_ttl] || DEFAULT_TTL
+        @pipeline = options[:pipeline] || true
+
+        puts 'Creating new CloudCache [default_ttl=' + @default_ttl.to_s + ', persistent_conn=' + @pipeline.to_s + ']'
+
+        if @pipeline
+            @http_conn = Rightscale::HttpConnection.new()
+        end
 
     end
 
@@ -32,8 +49,8 @@ class CloudCache < ActiveSupport::Cache::Store
         # puts 'timestamp = ' + ts
         sig = generate_signature("CloudCache", command_name, ts, @secret_key)
         # puts "My signature = " + sig
-        url = "http://cloudcache.ws/" + command_path
-        # puts url
+        url = @protocol + "://" + @server + "/" + command_path # todo: append port if non standard
+         puts url
 
         user_agent = "CloudCache Ruby Client"
         headers = {'User-Agent' => user_agent, 'signature' => sig, 'timestamp' => ts, 'akey' => @access_key}
@@ -42,6 +59,10 @@ class CloudCache < ActiveSupport::Cache::Store
             extra_headers.each_pair do |k, v|
                 headers[k] = v
             end
+        end
+
+        if @pipeline
+
         end
 
 
@@ -73,10 +94,19 @@ class CloudCache < ActiveSupport::Cache::Store
         # req.each_header do |k, v|
         # puts 'header ' + k + '=' + v
         #end
-        res = Net::HTTP.start(uri.host, uri.port) do |http|
-            http.request(req)
+        if @pipeline
+            req_params =  { :request  => req,
+        :server   => @server,
+        :port     => @port,
+        :protocol => @protocol }
+            res = @http_conn.request(req_params)
+        else
+            res = Net::HTTP.start(uri.host, uri.port) do |http|
+                http.request(req)
+            end
         end
-        #puts 'response body=' + res.body
+
+#        puts 'response body=' + res.body
         case res
             when Net::HTTPSuccess
                 #puts 'response body=' + res.body
@@ -291,6 +321,9 @@ class CloudCache < ActiveSupport::Cache::Store
 
     def close
         # close http connection if it exists.
+        if @http_conn
+            @http_conn.finish
+        end
     end
 
 

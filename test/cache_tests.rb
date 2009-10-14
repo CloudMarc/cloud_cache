@@ -1,9 +1,10 @@
 require 'test/unit'
+#require File.dirname(__FILE__) + '/../lib/cloud_cache'
 require '../lib/cloud_cache'
-require 'my_class'
+require 'my_class.rb'
 #
-# You'll need make a cloudcache.yml file in this directory that contains:
-# amazon:
+# You'll need make a ~/.test-configs/cloud_cache.yml file that contains:
+# cloud_cache:
 #    access_key: ACCESS_KEY
 #    secret_key: SECRET
 #
@@ -11,18 +12,15 @@ class CacheTests < Test::Unit::TestCase
 
     def setup
         puts("Setting up cache...")
-        props = nil
-        begin
-            props = YAML::load(File.read('cloudcache.yml'))
-        rescue
-            raise "Couldn't find cloudcache.yml file. " + $!.message
-        end
-        @cache = ActiveSupport::Cache::CloudCache.new(props['access_key'], props['secret_key'])
+        @config = YAML::load(File.open(File.expand_path("~/.test-configs/cloud_cache.yml")))
+        #puts @config.inspect
+        @cache = CloudCache.new(@config['cloud_cache']['access_key'], @config['cloud_cache']['secret_key'])
     end
 
     def teardown
         @cache.shutdown unless @cache.nil?
     end
+
 
     def test_auth
         @cache.auth()
@@ -313,6 +311,29 @@ bmNvZGluZz0iVVRGLTgiPz4KPHJlc3BvbnNlPgogIDxtc2c+Y29udGludWU8
 L21zZz4KPC9yZXNwb25zZT4KBjsMQBc6E0BlcnJvcl9tZXNzYWdlMDoMQGFj
 dGlvbkkiCXBlcmYGOwxAFw==", :raw=>true)
     end
+    
 
+    def test_pipeline_vs_non
+        to_put = "I am a testing string. Take me apart and put me back together again."
+
+        @cache.pipeline = false
+        start = Time.now
+        100.times do |i|
+            @cache.put("k_#{i}", to_put)
+        end
+        duration1 = Time.now - start
+        puts 'non-persistent duration=' + duration1.to_s
+        sleep(1)
+
+        @cache.pipeline = true
+        start = Time.now
+        100.times do |i|
+            @cache.put("k_#{i}", to_put)
+        end
+        duration2 = Time.now - start
+        puts 'non-persistent duration=' + duration2.to_s
+
+        assert duration2 < duration1, "Pipelined was slower?? " + duration2.to_s + " slower than " + duration1.to_s
+    end
 
 end
