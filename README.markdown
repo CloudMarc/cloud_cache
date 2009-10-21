@@ -1,4 +1,11 @@
-= cloud_cache
+= CloudCache - caching in the cloud
+
+- Infinite size cache in the cloud
+- High performance
+- Introspection (memcached doesn't have it)
+- No maintenance
+- No worries
+- Free 5MB Cache!
 
 http://www.quetzall.com/
 
@@ -6,23 +13,18 @@ http://www.quetzall.com/
 
 Instant memcached, no servers required! See www.quetzall.com for more information.
 
-== FEATURES/PROBLEMS:
-
-* FIX (list of features or problems)
-
-== SYNOPSIS:
-
-  FIX (code sample of usage)
-
-== REQUIREMENTS:
-
-* FIX (list of requirements)
-
 == INSTALL:
 
 Be sure you have the new http://gemcutter.org source ABOVE rubyforge.org, then:
 
     gem install cloud_cache
+
+Get your CloudCache credentials for free at www.quetzall.com, then:
+
+    config.cache_store = CloudCache.new(CC_ACCESS_KEY, CC_SECRET_KEY)
+
+That's it!  Now start caching as you normally would and CloudCache handles the rest.
+
 
 == LICENSE:
 

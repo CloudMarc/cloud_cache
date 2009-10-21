@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description = %q{Client library for Quetzall's CloudCache service.}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
-    "README.txt"
+    "README.markdown"
   ]
   s.files = [
     "lib/cloud_cache.rb",
