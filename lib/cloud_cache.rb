@@ -251,7 +251,7 @@ class CloudCache < ActiveSupport::Cache::Store
         put(name, value, options)
     end
 
-    def delete(name, options = nil)
+    def delete(name, options={})
         super
         begin
             run_http(:delete, "DELETE", name)

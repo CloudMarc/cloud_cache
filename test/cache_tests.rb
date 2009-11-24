@@ -1,6 +1,5 @@
 require 'test/unit'
-#require File.dirname(__FILE__) + '/../lib/cloud_cache'
-require '../lib/cloud_cache'
+require File.join(File.dirname(__FILE__), '/../lib/cloud_cache')
 require 'my_class.rb'
 #
 # You'll need make a ~/.test-configs/cloud_cache.yml file that contains:
@@ -187,7 +186,19 @@ class CacheTests < Test::Unit::TestCase
         assert_equal("Travis", vz["m4"].name)
         assert_equal(10, vz["m4"].age)
 
+        kz = ["m1", "should_not_exist", "m3"]
+        vz = @cache.get_multi(kz)
+        puts 'VZ=' + vz.inspect
+        assert vz.size == 2
+        assert vz["should_not_exist"].nil?
 
+        @cache.delete("m1")
+        vz = @cache.get_multi(kz)
+        puts 'VZ=' + vz.inspect
+        assert vz.size == 1
+        assert vz["m1"].nil?
+        assert vz["should_not_exist"].nil?
+        assert !vz["m3"].nil?
     end
 
     def test_big
