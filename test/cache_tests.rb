@@ -333,7 +333,7 @@ dGlvbkkiCXBlcmYGOwxAFw==", :raw=>true)
             @cache.put("k_#{i}", to_put)
         end
         duration1 = Time.now - start
-        puts 'non-persistent duration=' + duration1.to_s
+        puts 'non-pipelined duration=' + duration1.to_s
         sleep(1)
 
         @cache.pipeline = true
@@ -342,7 +342,7 @@ dGlvbkkiCXBlcmYGOwxAFw==", :raw=>true)
             @cache.put("k_#{i}", to_put)
         end
         duration2 = Time.now - start
-        puts 'non-persistent duration=' + duration2.to_s
+        puts 'pipelined duration=' + duration2.to_s
 
         assert duration2 < duration1, "Pipelined was slower?? " + duration2.to_s + " slower than " + duration1.to_s
     end

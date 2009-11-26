@@ -23,25 +23,25 @@ class CloudCache < ActiveSupport::Cache::Store
     DEFAULT_PORT = "80"
     DEFAULT_PROTOCOL = "http"
 
-    attr_accessor :secret_key, :pipeline
+    attr_accessor :access_key, :secret_key, :host, :port, :protocol, :pipeline, :default_ttl
 
     def initialize(access_key, secret_key, options={})
         @access_key = access_key
         @secret_key = secret_key
 
-        @server = options[:host] || DEFAULT_HOST
+        @host = options[:host] || DEFAULT_HOST
         @port = options[:port] || DEFAULT_PORT
         @protocol = options[:protocol] || DEFAULT_PROTOCOL
 
         @default_ttl = options[:default_ttl] || DEFAULT_TTL
-        @pipeline = options[:pipeline] || true
+        @pipeline = options[:pipeline] || false
 
-        puts 'Creating new CloudCache [default_ttl=' + @default_ttl.to_s + ', persistent_conn=' + @pipeline.to_s + ']'
+        puts 'Creating new CloudCache [host=' + @host + ', default_ttl=' + @default_ttl.to_s + ', pipelining=' + @pipeline.to_s + ']'
 
-        if @pipeline
-            @http_conn = Rightscale::HttpConnection.new()
-        end
+    end
 
+    def pipelined?
+        @pipeline
     end
 
     def run_http(http_method, command_name, command_path, body=nil, parameters=nil, extra_headers=nil)
@@ -49,8 +49,8 @@ class CloudCache < ActiveSupport::Cache::Store
         # puts 'timestamp = ' + ts
         sig = generate_signature("CloudCache", command_name, ts, @secret_key)
         # puts "My signature = " + sig
-        url = @protocol + "://" + @server + "/" + command_path # todo: append port if non standard
-         puts url
+        url = @protocol + "://" + @host + "/" + command_path # todo: append port if non standard
+#         puts url
 
         user_agent = "CloudCache Ruby Client"
         headers = {'User-Agent' => user_agent, 'signature' => sig, 'timestamp' => ts, 'akey' => @access_key}
@@ -60,11 +60,6 @@ class CloudCache < ActiveSupport::Cache::Store
                 headers[k] = v
             end
         end
-
-        if @pipeline
-
-        end
-
 
         uri = URI.parse(url)
         #puts 'body=' + body.to_s
@@ -94,9 +89,13 @@ class CloudCache < ActiveSupport::Cache::Store
         # req.each_header do |k, v|
         # puts 'header ' + k + '=' + v
         #end
-        if @pipeline
+        if pipelined?
+            unless @http_conn
+                @http_conn = Rightscale::HttpConnection.new()
+            end
+
             req_params =  { :request  => req,
-        :server   => @server,
+        :server   => @host,
         :port     => @port,
         :protocol => @protocol }
             res = @http_conn.request(req_params)
