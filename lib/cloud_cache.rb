@@ -94,10 +94,10 @@ class CloudCache < ActiveSupport::Cache::Store
                 @http_conn = Rightscale::HttpConnection.new()
             end
 
-            req_params =  { :request  => req,
-        :server   => @host,
-        :port     => @port,
-        :protocol => @protocol }
+            req_params =  {:request  => req,
+                           :server   => @host,
+                           :port     => @port,
+                           :protocol => @protocol}
             res = @http_conn.request(req_params)
         else
             res = Net::HTTP.start(uri.host, uri.port) do |http|
@@ -143,7 +143,7 @@ class CloudCache < ActiveSupport::Cache::Store
         raw = options[:raw]
         kj = keys.to_json
         #puts "keys.to_json = " + kj
-        extra_headers = {"keys" => kj }
+        extra_headers = {"keys" => kj}
         #puts "get_multi, extra_headers keys =  " + extra_headers.keys.to_s
         #puts "get_multi, extra_headers vals = " + extra_headers.values.to_s
         body = run_http(:get, "GET", "getmulti", nil, nil, extra_headers)
@@ -201,7 +201,16 @@ class CloudCache < ActiveSupport::Cache::Store
             return data
         else
             #data = Base64.decode64(data)
-            return Marshal.load((data))
+            begin
+                return Marshal.load((data))
+            rescue ArgumentError => ex
+                # Most likely: ArgumentError: marshal data too short
+                # Let's assume the ruby version has been updated or something and handle this elegantly, next put should fix it
+                puts 'ArgumentError on Marshal.load! ' + ex.message
+                puts 'Returning nil, please reput and try again.'
+                return nil
+            end
+
         end
     end
 
